@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter
+.jupyter/
+
+# Data artifacts
+data/*
+!data/raw/
+!data/raw/.gitkeep
+!data/interim/
+!data/interim/.gitkeep
+!data/external/
+!data/external/.gitkeep
+
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
