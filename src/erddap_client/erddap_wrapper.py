@@ -50,6 +50,11 @@ class GliderIngestor:
         )
         return pd.read_csv(url).drop_duplicates()
 
+    def get_dataset_metadata(self, dataset_id):
+        target_dataset_id = dataset_id if dataset_id else self.e.dataset_id
+        return pd.read_csv(self.e.get_info_url(target_dataset_id))
+
+
     def get_dataset(self, dataset_id):
         self.e.dataset_id = dataset_id
         return pd.read_csv(self.e.get_download_url())
