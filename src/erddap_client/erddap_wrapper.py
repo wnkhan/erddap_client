@@ -55,6 +55,6 @@ class GliderIngestor:
         return pd.read_csv(self.e.get_info_url(target_dataset_id))
 
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, dataset_id, variables):
         self.e.dataset_id = dataset_id
-        return pd.read_csv(self.e.get_download_url())
+        return pd.read_csv(self.e.get_download_url(variables=variables))
