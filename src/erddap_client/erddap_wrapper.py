@@ -1,20 +1,32 @@
 import pandas as pd
+import threading
 from erddapy import ERDDAP, servers
 
 GLIDER_SERVER_NAME = "ngdac"
 GLIDER_URL = str(servers[GLIDER_SERVER_NAME].url)
 
-GLIDER_SERVER_INFO = {
-    "server": GLIDER_URL,
+SERVER_DEFAULTS = {
     "protocol": "tabledap",
-    "response": "csv",
+    "response": "csv"
 }
 
 
-class GliderIngestor:
+class ErddapIngestor:
 
-    def __init__(self):
-        self.e = ERDDAP(**GLIDER_SERVER_INFO)
+    def __init__(self, server_name):
+        self._server_name = server_name
+        self._local = threading.local()
+
+    @property
+    def e(self):
+        return self._get_client()
+
+    def _get_client(self):
+        client = getattr(self._local, "client", None)
+        if client is None:
+            client = ERDDAP(self._server_name, **SERVER_DEFAULTS)
+            self._local.client = client
+        return client
 
     def dataset_search(
         self,
@@ -42,7 +54,8 @@ class GliderIngestor:
         }
         search_params.update(search_filters)
 
-        url = self.e.get_search_url(
+        client = self._get_client()
+        url = client.get_search_url(
             search_for=search_for,
             response=response,
             protocol=protocol,
@@ -51,10 +64,12 @@ class GliderIngestor:
         return pd.read_csv(url).drop_duplicates()
 
     def get_dataset_metadata(self, dataset_id):
-        target_dataset_id = dataset_id if dataset_id else self.e.dataset_id
-        return pd.read_csv(self.e.get_info_url(target_dataset_id))
+        client = self._get_client()
+        target_dataset_id = dataset_id if dataset_id else client.dataset_id
+        return pd.read_csv(client.get_info_url(target_dataset_id))
 
 
     def get_dataset(self, dataset_id, variables):
-        self.e.dataset_id = dataset_id
-        return pd.read_csv(self.e.get_download_url(variables=variables))
+        client = self._get_client()
+        client.dataset_id = dataset_id
+        return pd.read_csv(client.get_download_url(variables=variables))
